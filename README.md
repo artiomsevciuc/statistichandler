@@ -19,16 +19,24 @@ Place statisticshandler.war int the Tomcat container in the ~/apache-tomcat-8.5.
 Start tomcat from command line by going to cmd to ~/apache-tomcat-8.5.32/bin using startup.bat command
 
 There are three links which are accessible from browser, SOAP UI, Postman
+
 POST http://localhost:8080/statisticshandler/handleStatistics
+
 MediaType "applicatin/json"
+
 Content
+
 {
+
 	"customerID": 1,
 	"tagID": 2,
 	"userID": "aaaaaaaa-bbbb-cccc-1111-222222222222",
 	"remoteIP": "123.234.56.78",
 	"timestamp": 1500000000
 }
+
 GET http://localhost:8080/statisticshandler/getStatisticsForCustomer?customer=Big News Media Corp&statisticForDay=2021-12-05T17:06:46.798Z
+
 GET http://localhost:8080/statisticshandler/getStatisticsForADay?statisticForDay=2021-12-05T17:06:46.798Z
+
 Time format is a strict one, please keep the one from the example
