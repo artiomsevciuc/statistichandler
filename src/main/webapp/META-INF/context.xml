@@ -1,0 +1,17 @@
+ <Context>
+	<WatchedResource>WEB-INF/web.xml</WatchedResource>
+    <WatchedResource>${catalina.base}/conf/web.xml</WatchedResource>
+    <Resource name="jdbc/statistics"
+              auth="Container"
+              type="javax.sql.DataSource"
+              maxTotal="100"
+              maxIdle="30"
+              maxWaitMillis="10000"
+              username="VIRTUAL"
+              password="MINDS"
+              driverClassName="oracle.jdbc.OracleDriver"
+              url="jdbc:oracle:thin:@192.168.56.101:1521:orcl12c"
+              testOnBorrow="true"
+              validationQuery="select 1 from dual"
+    />
+</Context>
