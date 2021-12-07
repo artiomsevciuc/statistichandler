@@ -1,5 +1,5 @@
 # statistichandler
-A simple Java Servlet example whic contains how to use thread pool and timer
+A simple Java Servlet example which contains how to use thread pool and timer
 The application was build against Java 1.8 and newer. Test were performed on the Apache Tomcat apache-tomcat-8.5.32 container, should work on older and newer version, the only requirement is that the Tomcat has to run also on Java 1.8
 
 Configurations:
@@ -14,9 +14,9 @@ As it was said they are optional ones as the StatisticsHandlerProperties enum co
 3. Please create database schema, oracle example is in the /statisticshandler/src/main/webapp/META-INF/DDL.sql file
 
 When configuration steps where done please check if maven is installed, if not, then install it. 
-Type "mvn clean install" command in the command line on the root folder of the project, that comand will create the statisticshandler.war
+Type "mvn clean install" command in the command line on the root folder of the project, that command will create the statisticshandler.war
 Place statisticshandler.war int the Tomcat container in the ~/apache-tomcat-8.5.32/webapps
-Start tomcat from command line by goinf in cmd to ~/apache-tomcat-8.5.32/bin using startup.bat command
+Start tomcat from command line by going to cmd to ~/apache-tomcat-8.5.32/bin using startup.bat command
 
 There are three links which are accessible from browser, SOAP UI, Postman
 POST http://localhost:8080/statisticshandler/handleStatistics
