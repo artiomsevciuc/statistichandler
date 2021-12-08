@@ -13,6 +13,7 @@ import com.virtualminds.exceptions.InvalidRequestException;
 
 public class RequestProcessorWorker implements Runnable {
 
+	private static final String NOT_A_NUMBER_ERROR = "Not a number";
 	private static final String TIME_STAMP_ATTRIBUTE = "timestamp";
 	private static final String REMOTE_IP_ATTRIBUTE = "remoteIP";
 	private static final String USER_ID_ATTRIBUTE = "userID";
@@ -55,13 +56,13 @@ public class RequestProcessorWorker implements Runnable {
 	private void checkValidJson(JsonObject jsonObject) {
 		JsonPrimitive customerId = null;
 		try {
-			customerId = (JsonPrimitive) getOjectValue(CUSTOMER_ID_ATTRIBUTE, jsonObject);
+			customerId = (JsonPrimitive) getObjectValue(CUSTOMER_ID_ATTRIBUTE, jsonObject);
 			validateCustomerIdIsNumber(customerId);
-			getOjectValue(TAG_ID_ATTRIBUTE, jsonObject);
-			getOjectValue(USER_ID_ATTRIBUTE, jsonObject);
-			JsonPrimitive remoteIpString = (JsonPrimitive) getOjectValue(REMOTE_IP_ATTRIBUTE, jsonObject);
+			getObjectValue(TAG_ID_ATTRIBUTE, jsonObject);
+			getObjectValue(USER_ID_ATTRIBUTE, jsonObject);
+			JsonPrimitive remoteIpString = (JsonPrimitive) getObjectValue(REMOTE_IP_ATTRIBUTE, jsonObject);
 			Long remoteIp = validateRemoteIp(remoteIpString);
-			getOjectValue(TIME_STAMP_ATTRIBUTE, jsonObject);
+			getObjectValue(TIME_STAMP_ATTRIBUTE, jsonObject);
 			computeValidJson(customerId.getAsLong(), remoteIp);
 		} catch (InvalidRequestException e) {
 			processInvalidException(customerId, e);
@@ -71,12 +72,12 @@ public class RequestProcessorWorker implements Runnable {
 	private Long validateRemoteIp(JsonPrimitive remoteIp) throws InvalidRequestException {
 		String remoteIpString = remoteIp.getAsString();
 		if (remoteIpString == null) {
-			throw new InvalidRequestException();
+			throw new InvalidRequestException(REMOTE_IP_ATTRIBUTE);
 		}
 		try {
 			return Long.parseLong(remoteIpString.replaceAll("\\.", ""));
 		} catch (NumberFormatException e) {
-			throw new InvalidRequestException();
+			throw new InvalidRequestException(REMOTE_IP_ATTRIBUTE, e);
 		}
 	}
 
@@ -84,17 +85,17 @@ public class RequestProcessorWorker implements Runnable {
 		if (e.isJustLogException()) {
 			getLogger().log(Level.INFO, String.format(PARSE_EXCEPTION, getMessage()), e);
 		} else if (customerId != null) {
-			insertOrUpdateIntoStatisticMap(customerId.getAsLong(), false);
+			computeInvalidJson(customerId.getAsLong());
 		}
 	}
 
 	private void validateCustomerIdIsNumber(JsonPrimitive customerId) throws InvalidRequestException {
 		if (!customerId.isNumber()) {
-			throw new InvalidRequestException(true);
+			throw new InvalidRequestException(CUSTOMER_ID_ATTRIBUTE, true, NOT_A_NUMBER_ERROR);
 		}
 	}
 
-	private void computeValidJson(Long customerId, long remoteIp) {
+	private void computeValidJson(Long customerId, final long remoteIp) {
 		if (customerId != null) {
 			statisticsMap.compute(customerId, (key, pojo) -> {
 				if (pojo == null) {
@@ -123,16 +124,16 @@ public class RequestProcessorWorker implements Runnable {
 	}
 
 	// I just assume that set of customer IDs wont be very huge, otherwise it will
-	// require a select in the database
+	// require a select in the database or to do a inverse select
 	private boolean isCustomerActive(Long customerId) {
 		return activeCustomerIDs.contains(customerId);
 	}
 
-	private Object getOjectValue(String keyName, JsonObject jsonObject) throws InvalidRequestException {
+	private Object getObjectValue(String keyName, JsonObject jsonObject) throws InvalidRequestException {
 		if (jsonObject.has(keyName) && !jsonObject.get(keyName).isJsonNull()) {
 			return jsonObject.get(keyName);
 		}
-		throw new InvalidRequestException();
+		throw new InvalidRequestException(keyName);
 	}
 
 	protected void tryToParseFailedParsing() {
@@ -151,22 +152,18 @@ public class RequestProcessorWorker implements Runnable {
 
 	private void parseCustomerIdInfo(String customerIdString) {
 		try {
-			insertOrUpdateIntoStatisticMap(Long.parseLong(customerIdString), false);
+			computeInvalidJson(Long.parseLong(customerIdString));
 		} catch (NumberFormatException e) {
 			getLogger().log(Level.WARNING, String.format(NUMBER_FORMAT_EXCEPTION, getMessage()));
 		}
 	}
 
-	private void insertOrUpdateIntoStatisticMap(Long customerId, final boolean incrementValidRequests) {
+	private void computeInvalidJson(Long customerId) {
 		statisticsMap.compute(customerId, (key, value) -> {
 			if (value == null) {
 				value = new StatisticsPOJO(isCustomerActive(customerId));
 			}
-			if (incrementValidRequests) {
-				value.incrementValidRequests();
-			} else {
-				value.incrementInvalidRequests();
-			}
+			value.incrementInvalidRequests();
 			return value;
 		});
 	}

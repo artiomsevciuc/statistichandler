@@ -20,7 +20,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class RequestProcessorWorkerTest {
+public class InvalidJSONRequestProcessorWorkerTest {
+
 	private static final long CUSTOMER_ID = 51;
 	private RequestProcessorWorker testable;
 	private ConcurrentHashMap<Long, StatisticsPOJO> statisticsMap;
